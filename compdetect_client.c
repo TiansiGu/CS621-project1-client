@@ -1,22 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cjson/cJSON.h> 
-
-#define ADDR_LEN 20
-
-struct configurations {
-	char server_ip_addr[ADDR_LEN];
-	int udp_src_port;
-	int udp_dst_port;
-	
-};
+#include <cjson/cJSON.h>
+#include "client.h" 
 
 void parse_configs(char* file_name, struct configurations *configs) {
 	// open the json file
 	FILE *fp = fopen(file_name, "r");
 	if (fp == NULL) {
-		printf("Error: Unable to open the file.\n"); 
+		perror("Unable to open configuration file"); 
 	    exit(1);
 	}
 	// read the file contents into a string 
@@ -40,6 +32,12 @@ void parse_configs(char* file_name, struct configurations *configs) {
 	if (cJSON_IsString(name) && (name->valuestring != NULL)) { 
 	    strcpy(configs->server_ip_addr, name->valuestring);
 	}
+	
+	name = cJSON_GetObjectItemCaseSensitive(json,"server_port_preprobing"); 
+	if (cJSON_IsNumber(name)) { 
+		configs->server_port_preprobing = name->valueint;
+	}
+	
 	name = cJSON_GetObjectItemCaseSensitive(json,"udp_src_port"); 
 	if (cJSON_IsNumber(name)) { 
 		configs->udp_src_port = name->valueint;
@@ -60,7 +58,7 @@ int main(int argc, char* argv[]) {
 	memset(&configs, 0, sizeof(struct configurations));
 	char* file_name = argv[1];
 	parse_configs(file_name, &configs);
-
+	pre_probe(&configs);
 	
 	return 0;
 }
