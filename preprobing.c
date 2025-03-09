@@ -7,7 +7,7 @@
 
 #include "client.h"
 
-void pre_probe(struct configurations *configs) {
+void pre_probe(char* buffer, struct configurations *configs) {
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1) {
 	    perror("Socket creation failed");
@@ -28,8 +28,6 @@ void pre_probe(struct configurations *configs) {
 		close(sock);
 		exit(EXIT_FAILURE);
 	}
-
-	char* buffer = "Hello";
 	
 	int count = send(sock, buffer, strlen(buffer), 0);
 

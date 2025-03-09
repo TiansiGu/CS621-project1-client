@@ -4,16 +4,18 @@
 #include <cjson/cJSON.h>
 #include "client.h" 
 
-void parse_configs(char* file_name, struct configurations *configs) {
+#define BUFFER_SIZE 1024
+
+void parse_configs(char* file_name, char *buffer, struct configurations *configs) {
 	// open the json file
 	FILE *fp = fopen(file_name, "r");
 	if (fp == NULL) {
 		perror("Unable to open configuration file"); 
-	    exit(1);
+		exit(1);
 	}
 	// read the file contents into a string 
-	char buffer[1024]; 
-	int len = fread(buffer, 1, sizeof(buffer), fp);
+	int len = fread(buffer, 1, BUFFER_SIZE, fp);
+	buffer[len] = '\0';
 	fclose(fp);
 
 	// parse the JSON data 
@@ -21,7 +23,7 @@ void parse_configs(char* file_name, struct configurations *configs) {
 	if (json == NULL) { 
 		const char *error_ptr = cJSON_GetErrorPtr(); 
 		if (error_ptr != NULL) { 
-	    	 printf("Error: %s\n", error_ptr); 
+	    	 printf("Error when parsing json str: %s\n", error_ptr); 
 	    } 
 	    cJSON_Delete(json); 
 	    exit(1); 
@@ -56,9 +58,10 @@ void parse_configs(char* file_name, struct configurations *configs) {
 int main(int argc, char* argv[]) {
 	struct configurations configs;
 	memset(&configs, 0, sizeof(struct configurations));
+	char buffer[BUFFER_SIZE];
 	char* file_name = argv[1];
-	parse_configs(file_name, &configs);
-	pre_probe(&configs);
+	parse_configs(file_name, buffer, &configs);
+	pre_probe(buffer, &configs);
 	
 	return 0;
 }

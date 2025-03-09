@@ -1,3 +1,4 @@
+#include <stdint.h>
 #define ADDR_LEN 32
 
 struct configurations {
@@ -8,4 +9,4 @@ struct configurations {
 	
 };
 
-void pre_probe(struct configurations *);
+void pre_probe(char*, struct configurations*);
