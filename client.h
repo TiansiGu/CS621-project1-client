@@ -6,7 +6,9 @@ struct configurations {
 	uint16_t server_port_preprobing;
 	uint16_t udp_src_port;
 	uint16_t udp_dst_port;
-	
+	uint16_t l; // the Size of the UDP Payload in a UDP Packet
 };
 
-void pre_probe(char*, struct configurations*);
+void pre_probe(char *, struct configurations *);
+
+void probe(struct configurations *);

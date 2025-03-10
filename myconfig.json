@@ -2,5 +2,6 @@
   "server_ip_addr": "192.168.128.5",
   "server_port_preprobing": 7777,
   "udp_src_port": 9876,
-  "udp_dst_port": 8765
+  "udp_dst_port": 8765,
+  "l": 1000
 }

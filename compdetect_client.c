@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <cjson/cJSON.h>
 #include "client.h" 
 
@@ -49,6 +50,11 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	if (cJSON_IsNumber(name)) { 
 		configs->udp_dst_port = name->valueint;
 	}
+
+	name = cJSON_GetObjectItemCaseSensitive(json,"l");
+	if (cJSON_IsNumber(name)) {
+		configs->l = name->valueint;
+	}
 	  
 	// delete the JSON object 
 	cJSON_Delete(json);  
@@ -62,6 +68,9 @@ int main(int argc, char* argv[]) {
 	char* file_name = argv[1];
 	parse_configs(file_name, buffer, &configs);
 	pre_probe(buffer, &configs);
+
+	//sleep(2);
+	probe(&configs);
 	
 	return 0;
 }

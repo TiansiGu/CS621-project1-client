@@ -32,7 +32,7 @@ void pre_probe(char* buffer, struct configurations *configs) {
 	int count = send(sock, buffer, strlen(buffer), 0);
 
 	if (count == -1) {
-		perror("Failed to sending configurations");
+		perror("Failed to send configurations");
 		close(sock);
 		exit(EXIT_FAILURE);
 	}
