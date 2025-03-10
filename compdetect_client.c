@@ -55,6 +55,21 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	if (cJSON_IsNumber(name)) {
 		configs->l = name->valueint;
 	}
+
+	name = cJSON_GetObjectItemCaseSensitive(json,"n");
+	if (cJSON_IsNumber(name)) {
+		configs->n = name->valueint;
+	}
+
+	name = cJSON_GetObjectItemCaseSensitive(json,"gamma"); 	
+	if (cJSON_IsNumber(name)) {
+		configs->gamma = name->valueint;
+	}
+
+	name = cJSON_GetObjectItemCaseSensitive(json,"tau"); 	
+	if (cJSON_IsNumber(name)) {
+		configs->tau = name->valueint;
+	}
 	  
 	// delete the JSON object 
 	cJSON_Delete(json);  
@@ -69,7 +84,7 @@ int main(int argc, char* argv[]) {
 	parse_configs(file_name, buffer, &configs);
 	pre_probe(buffer, &configs);
 
-	//sleep(2);
+	sleep(2);
 	probe(&configs);
 	
 	return 0;

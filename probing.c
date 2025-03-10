@@ -31,7 +31,7 @@ void generate_random_bytes(unsigned char *ptr, int size) {
 	close(randomData);
 }
 
-unsigned char * creat_bytes(int size, int entropy_high) {
+unsigned char * generate_bytes(int size, int entropy_high) {
 	unsigned char *data_ptr = malloc(size);
 	if (data_ptr == NULL) {
 		perror("Failed to allocate memory for UDP packet data");
@@ -46,15 +46,14 @@ unsigned char * creat_bytes(int size, int entropy_high) {
 }
 
 void probe(struct configurations *configs) {
-	unsigned char *low_entropy_data = creat_bytes(configs->l, 0);
-	unsigned char *high_entropy_data = creat_bytes(configs->l, 1);
+	unsigned char *low_entropy_data = generate_bytes(configs->l, 0);
+	unsigned char *high_entropy_data = generate_bytes(configs->l, 1);
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1) {
 	    perror("Socket creation failed");
 	    exit(EXIT_FAILURE);
 	}
-
 
 	struct sockaddr_in sin;
 	memset(&sin, 0, sizeof(sin));
@@ -81,13 +80,27 @@ void probe(struct configurations *configs) {
 	// 	exit(EXIT_FAILURE);
 	// } 
 
-	char *buffer = "hello I am UDP";
-	count = sendto(sock, buffer, 32, 0, (struct sockaddr *) &sin, sizeof(sin));
+	// Send low entropy packet train
+	for (int i = 0; i < configs->n; i++) {
+		count = sendto(sock, low_entropy_data, configs->l, 0, (struct sockaddr *) &sin, sizeof(sin));
+		if (count == -1) {
+			perror("Failed to send UDP packets with low entropy data");
+			close(sock);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	// Wait γ secs before sending the high entropy packet train
+	sleep(configs->gamma);
 	
-	if (count == -1) {
-		perror("Failed to send UDP packet");
-		close(sock);
-		exit(EXIT_FAILURE);
+	// Send high entropy packet train
+	for (int i = 0; i < configs->n; i++) {
+		count = sendto(sock, high_entropy_data, configs->l, 0, (struct sockaddr *) &sin, sizeof(sin));
+		if (count == -1) {
+			perror("Failed to send UDP packets with high entropy data");
+			close(sock);
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 	close(sock);

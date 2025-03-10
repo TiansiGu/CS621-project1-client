@@ -3,5 +3,8 @@
   "server_port_preprobing": 7777,
   "udp_src_port": 9876,
   "udp_dst_port": 8765,
-  "l": 1000
+  "l": 1000,
+  "n": 6000,
+  "gamma": 15,
+  "tau": 100
 }
