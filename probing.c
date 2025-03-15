@@ -31,18 +31,26 @@ void generate_random_bytes(unsigned char *ptr, int size) {
 	close(randomData);
 }
 
-unsigned char * generate_bytes(int size, int entropy_high) {
+unsigned char * generate_payload(int size, int entropy_high) {
 	unsigned char *data_ptr = malloc(size);
 	if (data_ptr == NULL) {
 		perror("Failed to allocate memory for UDP packet data");
 		exit(EXIT_FAILURE);
 	}
+	
+	data_ptr += sizeof(uint16_t); // move ptr to the start of low/high entropy data
+
 	if (entropy_high) {
-		generate_random_bytes(data_ptr, size);
+		generate_random_bytes(data_ptr, size - sizeof(uint16_t)); //the first 2 bytes (16 bits) are reserved for packet ID
 	} else {
-		memset(data_ptr, 0, size);
+		memset(data_ptr, 0, size - sizeof(uint16_t));
 	}
-	return data_ptr;
+	return data_ptr - sizeof(uint16_t);
+}
+
+unsigned fill_packet_id(unsigned char *data_ptr, uint16_t packet_id) {
+	uint16_t network_packet_id = htons(packet_id);
+	memcpy(data_ptr, &packet_id, sizeof(network_packet_id));
 }
 
 void bind_port(int fd, int port, struct sockaddr_in *addr) {
@@ -58,8 +66,8 @@ void bind_port(int fd, int port, struct sockaddr_in *addr) {
 }
 
 void probe(struct configurations *configs) {
-	unsigned char *low_entropy_data = generate_bytes(configs->l, 0);
-	unsigned char *high_entropy_data = generate_bytes(configs->l, 1);
+	unsigned char *low_entropy_payload = generate_payload(configs->l, 0);
+	unsigned char *high_entropy_payload = generate_payload(configs->l, 1);
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1) {
@@ -84,26 +92,30 @@ void probe(struct configurations *configs) {
 
 	// Send low entropy packet train
 	for (int i = 0; i < configs->n; i++) {
-		count = sendto(sock, low_entropy_data, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
+		fill_packet_id(low_entropy_payload, i);
+		count = sendto(sock, low_entropy_payload, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
 		if (count == -1) {
 			perror("Failed to send UDP packets with low entropy data");
 			close(sock);
 			exit(EXIT_FAILURE);
 		}
 	}
+	free(low_entropy_payload); //free allocated resources
 
 	// Wait γ secs before sending the high entropy packet train
 	sleep(configs->gamma);
 	
 	// Send high entropy packet train
 	for (int i = 0; i < configs->n; i++) {
-		count = sendto(sock, high_entropy_data, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
+		fill_packet_id(high_entropy_payload, i);
+		count = sendto(sock, high_entropy_payload, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
 		if (count == -1) {
 			perror("Failed to send UDP packets with high entropy data");
 			close(sock);
 			exit(EXIT_FAILURE);
 		}
 	}
+	free(high_entropy_payload);
 	
 	close(sock);
 }
