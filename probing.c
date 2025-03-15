@@ -45,6 +45,18 @@ unsigned char * generate_bytes(int size, int entropy_high) {
 	return data_ptr;
 }
 
+void bind_port(int fd, int port, struct sockaddr_in *addr) {
+	addr->sin_family = AF_INET;
+    addr->sin_addr.s_addr = INADDR_ANY;
+    addr->sin_port = htons(port);
+
+	if (bind(fd, (struct sockaddr*) addr, sizeof(struct sockaddr_in)) == -1) {
+		perror("Failed to bind socket");
+		close(fd);
+		exit(EXIT_FAILURE);
+	}
+}
+
 void probe(struct configurations *configs) {
 	unsigned char *low_entropy_data = generate_bytes(configs->l, 0);
 	unsigned char *high_entropy_data = generate_bytes(configs->l, 1);
@@ -55,34 +67,24 @@ void probe(struct configurations *configs) {
 	    exit(EXIT_FAILURE);
 	}
 
-	struct sockaddr_in sin;
-	memset(&sin, 0, sizeof(sin));
+	struct sockaddr_in client_sin, server_sin;
+	memset(&client_sin, 0, sizeof(client_sin));
+	memset(&server_sin, 0, sizeof(server_sin));
 
 	in_addr_t server_addr = inet_addr(configs->server_ip_addr);
 
-    sin.sin_family = AF_INET; /* address from Internet, IP address specifically */
-	sin.sin_addr.s_addr = server_addr; /* already in network order */
-	sin.sin_port = htons(configs->udp_dst_port); /* convert to network order */
+    server_sin.sin_family = AF_INET; /* address from Internet, IP address specifically */
+	server_sin.sin_addr.s_addr = server_addr; /* already in network order */
+	server_sin.sin_port = htons(configs->udp_dst_port); /* convert to network order */
+
+	// Specify the socket client uses to connect to server
+	bind_port(sock, configs->udp_src_port, &client_sin);
 
 	int count;
-	
-	// char ready_buff[32];
-	// count = recvfrom(sock, ready_buff, sizeof(ready_buff), 0, NULL, NULL);
-	// if (count == -1) {
-	// 	perror("Failed to receive ready signal");
-	// 	close(sock);
-	// 	exit(EXIT_FAILURE);
-	// }
-	// ready_buff[count] = '\0';
-    // if (strcmp(ready_buff, "READY") != 0) {
-	// 	perror("Server did not give expected response");
-	// 	close(sock);
-	// 	exit(EXIT_FAILURE);
-	// } 
 
 	// Send low entropy packet train
 	for (int i = 0; i < configs->n; i++) {
-		count = sendto(sock, low_entropy_data, configs->l, 0, (struct sockaddr *) &sin, sizeof(sin));
+		count = sendto(sock, low_entropy_data, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
 		if (count == -1) {
 			perror("Failed to send UDP packets with low entropy data");
 			close(sock);
@@ -95,7 +97,7 @@ void probe(struct configurations *configs) {
 	
 	// Send high entropy packet train
 	for (int i = 0; i < configs->n; i++) {
-		count = sendto(sock, high_entropy_data, configs->l, 0, (struct sockaddr *) &sin, sizeof(sin));
+		count = sendto(sock, high_entropy_data, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
 		if (count == -1) {
 			perror("Failed to send UDP packets with high entropy data");
 			close(sock);
