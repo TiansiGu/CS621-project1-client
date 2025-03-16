@@ -27,7 +27,7 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	    	 printf("Error when parsing json str: %s\n", error_ptr); 
 	    } 
 	    cJSON_Delete(json); 
-	    exit(1); 
+	    exit(EXIT_FAILURE); 
 	}
 	
 	// access the JSON data 
@@ -77,15 +77,20 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 
 
 int main(int argc, char* argv[]) {
+	if (argc <= 1) {
+		printf("Missing configurations.Exited early before detection. \n");
+		exit(EXIT_FAILURE);
+	}
+
 	struct configurations configs;
 	memset(&configs, 0, sizeof(struct configurations));
 	char buffer[BUFFER_SIZE];
 	char* file_name = argv[1];
 	parse_configs(file_name, buffer, &configs);
-	pre_probe(buffer, &configs);
 
+	pre_probe(buffer, &configs);
 	sleep(2);
 	probe(&configs);
 	
-	return 0;
+	return EXIT_SUCCESS;
 }
