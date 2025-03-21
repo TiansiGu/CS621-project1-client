@@ -40,6 +40,11 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	if (cJSON_IsNumber(name)) { 
 		configs->server_port_preprobing = name->valueint;
 	}
+
+	name = cJSON_GetObjectItemCaseSensitive(json,"server_port_postprobing"); 
+	if (cJSON_IsNumber(name)) { 
+		configs->server_port_postprobing = name->valueint;
+	}
 	
 	name = cJSON_GetObjectItemCaseSensitive(json,"udp_src_port"); 
 	if (cJSON_IsNumber(name)) { 
@@ -91,6 +96,8 @@ int main(int argc, char* argv[]) {
 	pre_probe(buffer, &configs);
 	sleep(2);
 	probe(&configs);
+	sleep(configs.gamma);
+	post_probe(&configs);
 	
 	return EXIT_SUCCESS;
 }

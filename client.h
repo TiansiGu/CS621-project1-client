@@ -4,6 +4,7 @@
 struct configurations {
 	char server_ip_addr[ADDR_LEN];
 	uint16_t server_port_preprobing;
+	uint16_t server_port_postprobing;
 	uint16_t udp_src_port;
 	uint16_t udp_dst_port;
 	uint32_t l; // the Size of the UDP Payload in a UDP Packet
@@ -15,3 +16,5 @@ struct configurations {
 void pre_probe(char *, struct configurations *);
 
 void probe(struct configurations *);
+
+void post_probe(struct configurations *);
