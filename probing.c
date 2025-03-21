@@ -65,11 +65,18 @@ void bind_port(int fd, int port, struct sockaddr_in *addr) {
 	}
 }
 
-void probe(struct configurations *configs) {
-	unsigned char *low_entropy_payload = generate_payload(configs->l, 0);
-	unsigned char *high_entropy_payload = generate_payload(configs->l, 1);
+/** Set don't fragment bit for sock fd */
+void set_df(int fd) {
+	int val = IP_PMTUDISC_DO;
+	if (setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val)) == -1) {
+		perror("Failed to set don't fragment");
+		close(fd);
+		exit(EXIT_FAILURE);
+	}
+}
 
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+void probe(struct configurations *configs) {
+	int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1) {
 	    perror("Socket creation failed");
 	    exit(EXIT_FAILURE);
@@ -88,14 +95,20 @@ void probe(struct configurations *configs) {
 	// Specify the socket client uses to connect to server
 	bind_port(sock, configs->udp_src_port, &client_sin);
 
-	int count;
+	// Set DF bit
+	set_df(sock);
 
+	unsigned char *low_entropy_payload = generate_payload(configs->l, 0);
+	unsigned char *high_entropy_payload = generate_payload(configs->l, 1);
+	
+	int count;
 	// Send low entropy packet train
 	for (int i = 0; i < configs->n; i++) {
 		fill_packet_id(low_entropy_payload, i);
 		count = sendto(sock, low_entropy_payload, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
 		if (count == -1) {
 			perror("Failed to send UDP packets with low entropy data");
+			free(low_entropy_payload);
 			close(sock);
 			exit(EXIT_FAILURE);
 		}
@@ -111,6 +124,7 @@ void probe(struct configurations *configs) {
 		count = sendto(sock, high_entropy_payload, configs->l, 0, (struct sockaddr *) &server_sin, sizeof(server_sin));
 		if (count == -1) {
 			perror("Failed to send UDP packets with high entropy data");
+			free(high_entropy_payload);
 			close(sock);
 			exit(EXIT_FAILURE);
 		}
