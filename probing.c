@@ -41,7 +41,7 @@ unsigned char * generate_payload(int size, int entropy_high) {
 	data_ptr += sizeof(uint16_t); // move ptr to the start of low/high entropy data
 
 	if (entropy_high) {
-		generate_random_bytes(data_ptr, size - sizeof(uint16_t)); //the first 2 bytes (16 bits) are reserved for packet ID
+		generate_random_bytes(data_ptr, size - sizeof(uint16_t)); //leave the first 2 bytes (16 bits) for packet ID
 	} else {
 		memset(data_ptr, 0, size - sizeof(uint16_t));
 	}
@@ -100,6 +100,8 @@ void probe(struct configurations *configs) {
 
 	unsigned char *low_entropy_payload = generate_payload(configs->l, 0);
 	unsigned char *high_entropy_payload = generate_payload(configs->l, 1);
+	// Set the first 10 bytes to data regulated by configs
+	strncpy(high_entropy_payload + sizeof(uint16_t), configs->udp_head_bytes, FIX_DATA_LEN);
 	
 	int count;
 	// Send low entropy packet train

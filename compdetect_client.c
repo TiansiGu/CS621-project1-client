@@ -56,6 +56,11 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 		configs->udp_dst_port = name->valueint;
 	}
 
+	name = cJSON_GetObjectItemCaseSensitive(json,"udp_head_bytes"); 
+	if (cJSON_IsString(name) && (name->valuestring != NULL)) { 
+	    memcpy(configs->udp_head_bytes, name->valuestring, FIX_DATA_LEN);
+	}
+
 	name = cJSON_GetObjectItemCaseSensitive(json,"l");
 	if (cJSON_IsNumber(name)) {
 		configs->l = name->valueint;
