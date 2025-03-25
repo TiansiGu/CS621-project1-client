@@ -9,7 +9,13 @@
 #include "client.h"
 #include "payload_generator.h"
 
-
+/**
+ * This function binds the provided socket descriptor to the specified port.
+ * 
+ * @param fd The socket descriptor that will be bound to the specified port.
+ * @param port The port number to bind the socket to.
+ * @param addr The sockaddr_in structure that will hold the bound address and port.
+ */
 void bind_port(int fd, int port, struct sockaddr_in *addr) {
 	addr->sin_family = AF_INET;
     addr->sin_addr.s_addr = INADDR_ANY;
@@ -22,7 +28,10 @@ void bind_port(int fd, int port, struct sockaddr_in *addr) {
 	}
 }
 
-/** Set don't fragment bit for sock fd */
+/** 
+ * Sets the "Don't Fragment" (DF) flag on the socket to prevent packet fragmentation.
+ * @param fd The file descriptor of the socket to configure.
+ */
 void set_df(int fd) {
 	int val = IP_PMTUDISC_DO;
 	if (setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val)) == -1) {
@@ -32,6 +41,16 @@ void set_df(int fd) {
 	}
 }
 
+/** 
+ * This function runs the client task of probing phase, creates a UDP socket, binds it to a specified source port, 
+ * and sends two series of UDP packets to a server. The payload of packets are generated using 
+ * the `generate_payload` function, their first 10 bytes are determined by the configuration
+ * `udp_head_bytes`, and their IDs are set. After sending the low entropy packet train, the function 
+ * waits for a specified time (`gamma`) before sending the high entropy train.
+ * 
+ * @param configs A pointer to the `configurations` structure containing config params
+ * @return void. This function does not return any value but exits on failure.
+ */
 void probe(struct configurations *configs) {
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1) {

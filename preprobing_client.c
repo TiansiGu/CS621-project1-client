@@ -7,6 +7,17 @@
 
 #include "client.h"
 
+/** 
+ * This function runs the client task of preprobing phase: creates a TCP socket, connects to the server, 
+ * and sends the configuration data (stored in `buffer`) to the server. After sending the data, 
+ * the socket is closed. If any errors occur during preprobing, the function prints error message
+ * and exits the program.
+ * 
+ * @param buffer A pointer to the buffer containing the configuration data to be sent to the server.
+ * @param configs A pointer to the `configurations` structure that holds the server's IP address and port.
+ * 
+ * @return void. This function does not return any value but exits the program on failure.
+ */
 void pre_probe(char* buffer, struct configurations *configs) {
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1) {

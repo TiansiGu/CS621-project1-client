@@ -11,6 +11,18 @@
 #define SERVER_PREP_TIME 2
 #define WAIT_TIME 60
 
+/** 
+ * This function reads a JSON configuration file, parses its contents, extracts 
+ * configuration values, and stores them in the provided `configs` structure. If 
+ * a specific field doesn't exist in the json file, set the field of `configs`
+ * to default value (defined in default.h).
+ * 
+ * @param file_name The name of the configuration file to be parsed.
+ * @param buffer A buffer where the contents of the configuration file will be stored temporarily.
+ * @param configs A pointer to the `configs` structure.
+ * 
+ * @return void. This function modifies the `configs` structure based on the parsed configuration data.
+ */
 void parse_configs(char* file_name, char *buffer, struct configurations *configs) {
 	// open the json file
 	FILE *fp = fopen(file_name, "r");
@@ -100,7 +112,14 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	cJSON_Delete(json);  
 }
 
-
+/** 
+ * This function checks if the configuration file is provided, then parses the configuration 
+ * file, and execute three detection processes: preprocessing, probing, and postprobing.
+ * 
+ * @param argc The number of command-line arguments.
+ * @param argv An array of command-line arguments.
+ * @return EXIT_SUCCESS on successful completion, or EXIT_FAILURE if an error occurs.
+ */
 int main(int argc, char* argv[]) {
 	if (argc <= 1) {
 		printf("Missing configurations.Exited early before detection. \n");

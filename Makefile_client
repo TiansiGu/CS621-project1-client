@@ -3,10 +3,10 @@ PROGS = compdetect_client
 LDFLAGS = -lcjson
 
 %.o: %.c client.h payload_generator.h default.h
-	gcc -c -g -o $@ $< 
+	gcc -c -o $@ $< 
 
 $(PROGS): $(OBJS)
-	gcc -g -o $@ $^ $(LDFLAGS)
+	gcc -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -rf $(OBJS) $(PROGS)

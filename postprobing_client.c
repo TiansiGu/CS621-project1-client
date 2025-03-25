@@ -9,6 +9,16 @@
 
 #define BUF_SIZE 64
 
+/** 
+ * @brief Establishes a TCP connection to the server and receives the detection result.
+ * 
+ * This function runs the client task of post-probing phase: establishes a TCP connection to the server, 
+ * and uses the `select` to block until data is available on the socket. Once data is available,
+ * it receives the datat and prints the detection result.
+ * 
+ * @param configs A pointer to the `configurations` structure containing config params
+ * @return void. This function does not return any value but exits on failure.
+ */
 void post_probe(struct configurations *configs) {
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1) {
