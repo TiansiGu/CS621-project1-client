@@ -6,6 +6,8 @@
 #include "client.h" 
 
 #define BUFFER_SIZE 1024
+#define SERVER_PREP_TIME 2
+#define WAIT_TIME 60
 
 void parse_configs(char* file_name, char *buffer, struct configurations *configs) {
 	// open the json file
@@ -17,7 +19,7 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	// read the file contents into a string 
 	int len = fread(buffer, 1, BUFFER_SIZE, fp);
 	buffer[len] = '\0';
-	fclose(fp);
+	fclose(fp); // free memory
 
 	// parse the JSON data 
 	cJSON *json = cJSON_Parse(buffer); 
@@ -75,11 +77,6 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	if (cJSON_IsNumber(name)) {
 		configs->gamma = name->valueint;
 	}
-
-	name = cJSON_GetObjectItemCaseSensitive(json,"tau"); 	
-	if (cJSON_IsNumber(name)) {
-		configs->tau = name->valueint;
-	}
 	  
 	// delete the JSON object 
 	cJSON_Delete(json);  
@@ -98,10 +95,22 @@ int main(int argc, char* argv[]) {
 	char* file_name = argv[1];
 	parse_configs(file_name, buffer, &configs);
 
+	/** Execute pre probing phase */
 	pre_probe(buffer, &configs);
-	sleep(2);
+	
+	/** Wait a reasonabal time, to make sure when the client starts to send UDP packets, 
+	the server has completed pre-probing phase and has started to recv in probing phase */
+	sleep(SERVER_PREP_TIME);
+	
+	/** Execute probing phase */
 	probe(&configs);
-	sleep(configs.gamma);
+	
+	/** Wait a reasonabally long time, to make sure when the client starts need to 
+	initialize the post-probing connection with the server, the server has completed 
+	probing phase and is ready to receive the connection */
+	sleep(WAIT_TIME);
+	
+	/** Execute post probing phase */
 	post_probe(&configs);
 	
 	return EXIT_SUCCESS;
