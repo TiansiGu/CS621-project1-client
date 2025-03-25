@@ -2,7 +2,7 @@ OBJS = compdetect_client.o preprobing_client.o probing_client.o postprobing_clie
 PROGS = compdetect_client
 LDFLAGS = -lcjson
 
-%.o: %.c client.h payload_generator.h
+%.o: %.c client.h payload_generator.h default.h
 	gcc -c -g -o $@ $< 
 
 $(PROGS): $(OBJS)

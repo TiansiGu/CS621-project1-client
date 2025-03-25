@@ -3,7 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <cjson/cJSON.h>
+
 #include "client.h" 
+#include "default.h"
 
 #define BUFFER_SIZE 1024
 #define SERVER_PREP_TIME 2
@@ -41,41 +43,57 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	name = cJSON_GetObjectItemCaseSensitive(json,"server_port_preprobing"); 
 	if (cJSON_IsNumber(name)) { 
 		configs->server_port_preprobing = name->valueint;
+	} else {
+		configs->server_port_preprobing = DEFAULT_SERVER_PORT_PREPROBING;
 	}
 
 	name = cJSON_GetObjectItemCaseSensitive(json,"server_port_postprobing"); 
 	if (cJSON_IsNumber(name)) { 
 		configs->server_port_postprobing = name->valueint;
+	} else {
+		configs->server_port_postprobing = DEFAULT_SERVER_PORT_POSTPROBING;
 	}
 	
 	name = cJSON_GetObjectItemCaseSensitive(json,"udp_src_port"); 
 	if (cJSON_IsNumber(name)) { 
 		configs->udp_src_port = name->valueint;
+	} else {
+		configs->udp_src_port = DEFAULT_UDP_SRC_PORT;
 	}
 
 	name = cJSON_GetObjectItemCaseSensitive(json,"udp_dst_port"); 
 	if (cJSON_IsNumber(name)) { 
 		configs->udp_dst_port = name->valueint;
+	} else {
+		configs->udp_dst_port = DEFAULT_UDP_DST_PORT;
 	}
 
 	name = cJSON_GetObjectItemCaseSensitive(json,"udp_head_bytes"); 
 	if (cJSON_IsString(name) && (name->valuestring != NULL)) { 
 	    memcpy(configs->udp_head_bytes, name->valuestring, FIX_DATA_LEN);
+	} else {
+		memcpy(configs->udp_head_bytes, DEFAULT_UDP_HEAD_BYTES, FIX_DATA_LEN);
 	}
 
 	name = cJSON_GetObjectItemCaseSensitive(json,"l");
 	if (cJSON_IsNumber(name)) {
 		configs->l = name->valueint;
+	} else {
+		configs->l = DEFAULT_L;
 	}
 
 	name = cJSON_GetObjectItemCaseSensitive(json,"n");
 	if (cJSON_IsNumber(name)) {
 		configs->n = name->valueint;
+	} else {
+		configs->n = DEFAULT_N;
 	}
 
 	name = cJSON_GetObjectItemCaseSensitive(json,"gamma"); 	
 	if (cJSON_IsNumber(name)) {
 		configs->gamma = name->valueint;
+	} else {
+		configs->gamma = DEFAULT_GAMMA;
 	}
 	  
 	// delete the JSON object 
