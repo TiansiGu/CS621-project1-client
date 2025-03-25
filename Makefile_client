@@ -1,4 +1,4 @@
-OBJS = compdetect_client.o preprobing.o probing.o postprobing.o payload_generator.o
+OBJS = compdetect_client.o preprobing_client.o probing_client.o postprobing_client.o payload_generator.o
 PROGS = compdetect_client
 LDFLAGS = -lcjson
 
