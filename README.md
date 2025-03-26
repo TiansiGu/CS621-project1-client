@@ -10,6 +10,8 @@ This project provides two network applications that detect network compression b
 - Requirements
 - Installation
 - Configuration
+- Detection
+- Design Notes
 
 ## Requirements
 
@@ -19,7 +21,7 @@ To build and run the applications, the following environament and modules are re
     ```
     $ sudo apt install gcc
     ```
-- Have cjson library installed in both the VMs. Inside your VM, run
+- Have cjson library installed in both the VMs. You can install it in your VM by running
     ```
     $ sudo apt-get install libjson0 libjson0-dev
     ```
@@ -49,11 +51,28 @@ To build and run the applications, the following environament and modules are re
 ```
 
 ## Configuration
-Before running the program, you need to have the public ip address of your client VM and server VM, respectively. Run the following command in your VM, and get ip address from enp0s1 - inet protocol
+The configuration file for the programs is a json file. It has the following fields:
+- `server_ip_addr`(String): The Server’s IP Address (You must set)
+- `client_ip_addr`(String): The Client’s IP Address (You must set)
+- `server_port_preprobing`(Integer): Port Number for TCP (Pre-Probing Phases) (default value: 7777)
+- `server_port_postprobing`(Integer): Port Number for TCP (Post-Probing Phases) (default value: 6666)
+- `client_port_SYN`(Integer): Source Port Number for TCP SYN (default value: 1234)
+- `server_port_head_SYN`(Integer): Destination Port Number for TCP Head SYN
+- `server_port_tail_SYN`(Integer): Destination Port Number for TCP Tail SYN
+- `udp_src_port`(Integer): Source Port Number for UDP  (default value: 9876)
+- `udp_dst_port`(Integer): Destination Port Number for UDP  (default value: 8765)
+- `udp_head_bytes`(String): The first 10 Bytes for High Entropy UDP Payload, Should of Length 10 (default value: "1234567890")
+- `l`(Integer): The Size of the UDP Payload in the UDP Packet Train (default value: 1000)
+- `n`(Integer): The Number of UDP Packets in one UDP Packet Train (default value: 6000)
+- `gamma`(Integer): Inter-Measurement Time (default value: 15)
+- `tau`(Integer): The Threshold that we Consider Compression Exist, Don't Change unless Necessary (default value: 100)
+- `ttl`(Integer): TTL for the UDP Packets (default value: 255)
+
+Before running the programs, you need to have the public ip address of your client VM and server VM, respectively. Run the following command in your VM, and get ip address from enp0s1 - inet protocol
 ```
 % ip a
 ```
-Put the ip addresses as json strings in field `server_ip_addr` and `client_ip_addr`
+Put the ip addresses as json strings in field `server_ip_addr` and `client_ip_addr` of `myconfig.json`:
 ```
 {
   "server_ip_addr": "your-client-VM-ip-addr",
@@ -61,7 +80,8 @@ Put the ip addresses as json strings in field `server_ip_addr` and `client_ip_ad
   ......
 }
 ```
-Other configuration parameters are preset to default values, and you can change them as needed.
+Other configuration parameters in `myconfig.json` are preset to default values, and you can change them as needed.
+Both of the applications are designed to have default config values defined inside and would work in the absence of config file parameters, except for `server_ip_addr` and `client_ip_addr`. Therefore, in your config json file, you must and should at least have these two ip addresses set up properly. You need to set them in your client VM.
 
 As we send packets aggressively from client, you need to adjust kernel buffer size based on the number of UDP packets in the UDP train (`n` in configurations) and the payload size of each UDP packet (`l` in configurations). Based on the default `n` and `l`, 8MB should be enough for the buffer to fit all the packets in a UDP train.
 ```
@@ -99,7 +119,7 @@ If you install the server application on a host between which there do have comp
 ```
 
 ### Standalone Application
-To run the standalone application, you need to first get the ip address of the server you want to detect and put it in the `server_ip_addr` field of the configuration file. If you want to detect compression between the client and server VM, enter the ip address of the server VM.
+Setup IP Addresses: To run the standalone application, you need to first get the ip address of the server you want to detect and put it in the `server_ip_addr` field of the configuration file. If you want to detect compression between the client and server VM, enter the ip address of the server VM. The `client_ip_addr` is the client VM's IP address.
 You will run the standalone application on your client VM:
 ```
 % sudo ./compdetect myconfig.json

@@ -50,6 +50,9 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
 	cJSON *name = cJSON_GetObjectItemCaseSensitive(json, "server_ip_addr"); 
 	if (cJSON_IsString(name) && (name->valuestring != NULL)) { 
 	    strcpy(configs->server_ip_addr, name->valuestring);
+	} else {
+		printf("server_ip_addr is not set correctly. \n");
+		exit(EXIT_FAILURE);
 	}
 	
 	name = cJSON_GetObjectItemCaseSensitive(json,"server_port_preprobing"); 
@@ -122,7 +125,7 @@ void parse_configs(char* file_name, char *buffer, struct configurations *configs
  */
 int main(int argc, char* argv[]) {
 	if (argc <= 1) {
-		printf("Missing configurations.Exited early before detection. \n");
+		printf("Missing configurations. Exited early before detection. \n");
 		exit(EXIT_FAILURE);
 	}
 
